@@ -15,6 +15,43 @@ import (
 
 
 
+// The hash values of all the elements it gets is stored in the gob file
+func hash_gob_store() {
+
+
+}
+
+
+
+
+
+//Function takes a list of dependencies  and returns a topologically sorted list
+func top_sort (dlist list.List) {
+   for e :=flist.Front(); e != nil; e = e.Next() {
+    x := e.Value.(string)
+    def := strings.Fields(x)
+
+    // The topological Sort Code Begins Here
+    if len(def) == 0 {
+            continue // handle blank lines
+        }
+        lib := def[0]   // dependant (with an a) library
+        list := dg[lib] // handle additional dependencies
+
+
+  
+
+
+
+
+
+  }
+  //Topological Code Will End Here
+
+
+}
+
+
 //Tokenizing the String of config file into Target/Dependencies/Command
 func cdelimit(r rune) bool {
 	return  r == ':'
@@ -41,8 +78,8 @@ func config_parse(file_name string) list.List{
     	if isPrefix {
       		fmt.Println("isprefix error")
     	}
-	    sline := string(line)
-	    s := strings.FieldsFunc(sline,cdelimit)
+	  sline := string(line)
+	  s := strings.FieldsFunc(sline,cdelimit)
  		dep := strings.Replace(s[0],"<-",",", -1)
 		dep_list := strings.Split(dep,",")
 		dlist.PushBack(dep_list)

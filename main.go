@@ -17,13 +17,13 @@ import (
 
 
 type hashinfo struct {
-  fname string 
-  hash string
+  Fname string 
+  Hash string
 }
 
 
 // The hash values of all the elements it gets is stored in the gob file
-func hash_store(data []*hashinfo) {
+func hash_store(data []hashinfo) {
 
   //initialize a *bytes.Buffer
   m := new(bytes.Buffer) 
@@ -42,7 +42,12 @@ func hash_store(data []*hashinfo) {
 
 }
 
-
+//Function to check for changes 
+func check_file_change(){
+  // 1. Read hash_data gobject and iterate through all the md5 changes
+  // 2. Check the md5 hashes against input object
+  // 3. Return a array of files which have been changed
+}
 
 
 

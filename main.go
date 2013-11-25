@@ -11,13 +11,34 @@ import (
     "io"
     "strings"
     "sync"
+    "bytes"
+    "encoding/gob"
 )
 
 
+type hashinfo struct {
+  fname string 
+  hash string
+}
+
 
 // The hash values of all the elements it gets is stored in the gob file
-func hash_gob_store() {
+func hash_store(data []*hashinfo) {
 
+  //initialize a *bytes.Buffer
+  m := new(bytes.Buffer) 
+  //the *bytes.Buffer satisfies the io.Writer interface and can
+  //be used in gob.NewEncoder() 
+  enc := gob.NewEncoder(m)
+  //gob.Encoder has method Encode that accepts data items as parameter
+  enc.Encode(data)
+  //the bytes.Buffer type has method Bytes() that returns type []byte, 
+  //and can be used as a parameter in ioutil.WriteFile() 
+  err := ioutil.WriteFile("hash_data", m.Bytes(), 0600) 
+  if err != nil {
+          panic(err)
+  }
+  fmt.Printf("just saved all hashinfo with %v\n", data)
 
 }
 
@@ -26,10 +47,11 @@ func hash_gob_store() {
 
 
 //Function takes a list of dependencies  and returns a topologically sorted list
-func top_sort (dlist list.List) {
+func top_sort (flist list.List) {
    for e :=flist.Front(); e != nil; e = e.Next() {
     x := e.Value.(string)
     def := strings.Fields(x)
+    dg := make(map[string][]string)
 
     // The topological Sort Code Begins Here
     if len(def) == 0 {
@@ -37,7 +59,7 @@ func top_sort (dlist list.List) {
         }
         lib := def[0]   // dependant (with an a) library
         list := dg[lib] // handle additional dependencies
-
+        fmt.Println("Just printing list for heck os it %s",list)
 
   
 

@@ -75,22 +75,102 @@ func check_file_change(){
 }
 
 
-//Function takes a list of dependencies  and returns a topologically sorted list
-func top_sort (flist list.List) {
-   for e :=flist.Front(); e != nil; e = e.Next() {
-    x := e.Value.(string)
-    def := strings.Fields(x)
-    dg := make(map[string][]string)
+/*Function takes a list of dependencies  and returns a topologically sorted list
+Input: [ [Default baz]
+         [baz foo.o file.o]
+      ]
+Each element of the list is of type []string
 
-    // The topological Sort Code Begins Here
-    if len(def) == 0 {
+Output: List which is topologically sorted and each of the element is of 
+type []string
+Note: Currently its only printing the output and not returning anything
+*/
+func topsort (dep_list list.List) {
+
+    dg := make(map[string][]string)
+    //for _, line := range lines {
+    for e := dep_list.Front(); e!= nil ; e = e.Next() {
+        fmt.Println("printing e.value in main",e.Value)
+        def := e.Value.([]string)    
+
+        //def := strings.Fields(line)
+        fmt.Printf("Def is %s \n",def)
+        if len(def) == 0 {
             continue // handle blank lines
         }
         lib := def[0]   // dependant (with an a) library
         list := dg[lib] // handle additional dependencies
-        fmt.Println("Just printing list for heck os it %s",list)
-  }
-  //Topological Code Will End Here
+
+    scan:
+        for _, pr := range def[1:] { // (pr for prerequisite)
+            if pr == lib {
+                continue // ignore self dependencies
+            }
+            for _, known := range list {
+                if known == pr {
+                    continue scan // ignore duplicate dependencies
+                }
+            }
+            // build: this curious looking assignment establishess a node
+            // for the prerequisite library if it doesn't already exist.
+            dg[pr] = dg[pr]
+            // build: add edge (dependency)
+            list = append(list, pr)
+        }
+        // build: add or update node for dependant library
+        dg[lib] = list
+    }
+ 
+    fmt.Printf("Dg is %s \n",dg)
+    //fmt.Printf("list is %s \n",list)
+
+
+    // topological sort on dg
+    for len(dg) > 0 {
+        // collect libs with no dependencies
+        var zero []string
+        for lib, deps := range dg {
+            if len(deps) == 0 {
+                zero = append(zero, lib)
+                delete(dg, lib) // remove node (lib) from dg
+            }
+        }
+        // cycle detection
+        
+        if len(zero) == 0 {
+            fmt.Println("libraries with un-orderable dependencies:")
+            // collect un-orderable dependencies
+            cycle := make(map[string]bool)
+            for _, deps := range dg {
+                for _, dep := range deps {
+                    cycle[dep] = true
+                }
+            }
+            
+            // print libs with un-orderable dependencies
+            for lib, deps := range dg {
+                if cycle[lib] {
+                    fmt.Println(lib, deps)
+                }
+            }
+            return
+        }
+        // output a set that can be processed concurrently
+        fmt.Println("set is ",zero)
+ 
+        // remove edges (dependencies) from dg
+        for _, remove := range zero {
+            for lib, deps := range dg {
+                for i, dep := range deps {
+                    if dep == remove {
+                        copy(deps[i:], deps[i+1:])
+                        dg[lib] = deps[:len(deps)-1]
+                        break
+                    }
+                }
+            }
+        }
+    }
 }
 
 

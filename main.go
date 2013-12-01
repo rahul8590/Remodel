@@ -15,16 +15,41 @@ import (
     "encoding/gob"
 )
 
-
-type hashinfo struct {
-  Fname string 
-  Hash string
+type depinfo struct {
+  Dep []string 
+  Cmd string
 }
 
 
-// The hash values of all the elements it gets is stored in the gob file
-func hash_store(data []hashinfo) {
+// Retrieves the hash_values stored as a gobject hash_store
+func hash_ret (gobject string ) map[string]string{
+  n,err := ioutil.ReadFile(gobject)
+        if err != nil {
+                fmt.Printf("cannot read file")
+                panic(err)
+        } 
+        //create a bytes.Buffer type with n, type []byte
+        p := bytes.NewBuffer(n) 
+        //bytes.Buffer satisfies the interface for io.Writer and can be used
+        //in gob.NewDecoder() 
+        dec := gob.NewDecoder(p)
+        //make a map reference type that we'll populate with the decoded gob 
+        //e := make(map[int]string)
+         e := make(map[string]string)
+        //we must decode into a pointer, so we'll take the address of e 
+        err = dec.Decode(&e)
+        if err != nil {
+                fmt.Printf("cannot decode")
+                panic(err)
+        }
 
+        fmt.Println("after reading dep_data printing ",e)
+        return e
+
+}
+
+// The hash values of all the elements it gets is stored in the gob file
+func hash_store(data map[string]string) {
   //initialize a *bytes.Buffer
   m := new(bytes.Buffer) 
   //the *bytes.Buffer satisfies the io.Writer interface and can
@@ -34,21 +59,20 @@ func hash_store(data []hashinfo) {
   enc.Encode(data)
   //the bytes.Buffer type has method Bytes() that returns type []byte, 
   //and can be used as a parameter in ioutil.WriteFile() 
-  err := ioutil.WriteFile("hash_data", m.Bytes(), 0600) 
+  err := ioutil.WriteFile("dep_data", m.Bytes(), 0600) 
   if err != nil {
           panic(err)
-  }
-  fmt.Printf("just saved all hashinfo with %v\n", data)
 
+  }
+  fmt.Printf("just saved all depinfo with %v\n", data)
 }
 
 //Function to check for changes 
 func check_file_change(){
-  // 1. Read hash_data gobject and iterate through all the md5 changes
+  // 1. Read dep_data gobject and iterate through all the md5 changes
   // 2. Check the md5 hashes against input object
   // 3. Return a array of files which have been changed
 }
-
 
 
 //Function takes a list of dependencies  and returns a topologically sorted list
@@ -65,24 +89,19 @@ func top_sort (flist list.List) {
         lib := def[0]   // dependant (with an a) library
         list := dg[lib] // handle additional dependencies
         fmt.Println("Just printing list for heck os it %s",list)
-
-  
-
-
-
-
-
   }
   //Topological Code Will End Here
-
-
 }
 
 
-//Tokenizing the String of config file into Target/Dependencies/Command
+/* This function is not required anymore
+
+Tokenizing the String of config file into Target/Dependencies/Command
 func cdelimit(r rune) bool {
 	return  r == ':'
 }
+*/
+
 
 //Function will read file and print lines for each dependency and return list of all
 // dependencies
@@ -116,14 +135,18 @@ func config_parse(file_name string) list.List{
 
 
 //Gethash Function returns hash of a string
-func getHash(filename string) (string, error) {
+func getHash(filename string) (string) {
+    fmt.Println("filename to be read is ",filename)
+    filename = strings.TrimSpace(filename)
     bs, err := ioutil.ReadFile(filename)
     if err != nil {
-        return "-1", err
+        fmt.Println(filename,err)
+        return "-1"
     }
     h := md5.New()
     h.Write(bs)
-    return hex.EncodeToString(h.Sum(nil)), nil
+    fmt.Println("file value is ",bs)
+    return hex.EncodeToString(h.Sum(nil))
 }
 
 

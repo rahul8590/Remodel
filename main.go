@@ -1,4 +1,4 @@
-package main 
+  package main 
 import (
     "fmt"
     "io/ioutil"
@@ -208,32 +208,78 @@ func cdelimit(r rune) bool {
 
 //Function will read file and print lines for each dependency and return list of all
 // dependencies
-func config_parse(file_name string) list.List{
-	var dlist list.List
-	file,err := os.Open(file_name)
-	if err != nil {
-   		fmt.Println("error")
-  	}
-	bf := bufio.NewReader(file)
+func config_parse(file_name string) (list.List,map[string]depinfo) {
+  var dep_list list.List
+  var dep = make(map[string]depinfo)
+  var hashinfo = make(map[string]string)
 
-	for {
-		line, isPrefix, err := bf.ReadLine()
-   		if err ==  io.EOF {
-        	break
-   		}
-   		if err != nil {
-        	fmt.Println(err)
-        }	 
-    	if isPrefix {
-      		fmt.Println("isprefix error")
-    	}
-	  sline := string(line)
-	  s := strings.FieldsFunc(sline,cdelimit)
- 		dep := strings.Replace(s[0],"<-",",", -1)
-		dep_list := strings.Split(dep,",")
-		dlist.PushBack(dep_list)
+  file,err := os.Open(file_name)
+  if err != nil {
+      fmt.Println("error")
+    }
+  bf := bufio.NewReader(file)
+
+  for {
+    line, isPrefix, err := bf.ReadLine()
+      if err ==  io.EOF {
+          break
+      }
+      if err != nil {
+          fmt.Println(err)
+        }  
+      if isPrefix {
+          fmt.Println("isprefix error")
+      }
+    
+
+    sline := string(line)
+    
+    s := strings.Split(sline,"<-")
+    s[0] = strings.TrimSpace(s[0])
+    if (strings.ToLower(s[0]) == "default"){
+      continue
+    }
+
+    sbuild := strings.Split(s[1],":")
+    
+    //Getting rid of unnecessary whitespaces to create dependencies
+    sbuild[0] = strings.Replace(sbuild[0]," ","",-1)
+
+
+    fmt.Println("Hash Elements are",s[0],reflect.TypeOf(s[0]))
+    sfinal := strings.Split(sbuild[0],",")
+    
+    fmt.Println("Dependencies are  ",sfinal,reflect.TypeOf(sfinal))
+
+    temp := depinfo {}
+
+    if (len(sbuild) > 1) {
+      cmd1 := strings.Replace(sbuild[1],`"`,"",-1)
+      fmt.Println(sbuild[0],"commands is ",cmd1)  
+      temp.Cmd = cmd1
+    } else {
+      temp.Cmd = "nothing"  
+    }
+ 
+    temp.Dep = sfinal
+    dep[s[0]] = temp
+    for i,_ := range sfinal {
+      fmt.Println("i =>" , i , "s[i] => ",sfinal[i]  )  
+    }
+ 
+    dep_string := append(s[:1], sfinal...)
+    fmt.Println("dep_String is ",dep_string,len(dep_string))
+    dep_list.PushBack(dep_string)
+    for _,v := range dep_string {
+      fmt.Println("value to be sent for dep_string",v)
+      a := getHash(v)
+      hashinfo[v] = a
+    }
    }
-   return dlist 
+   fmt.Println("Elements in the dictonary are",dep)
+   fmt.Println(" Hash info values are ",hashinfo)
+   hash_store(hashinfo)
+   return dep_list , dep   
 }
 
 

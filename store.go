@@ -7,6 +7,7 @@ import (
 
 )
 
+
 func store(data interface{} , filename string) {
   m := new(bytes.Buffer) 
   enc := gob.NewEncoder(m)

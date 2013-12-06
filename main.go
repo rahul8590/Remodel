@@ -108,8 +108,8 @@ Output: List which is topologically sorted and each of the element is of
 type []string
 Note: Currently its only printing the output and not returning anything
 */
-func topsort (dep_list list.List) {
-
+func topsort (dep_list list.List) list.List{
+    var flist list.List
     dg := make(map[string][]string)
     //for _, line := range lines {
     for e := dep_list.Front(); e!= nil ; e = e.Next() {
@@ -124,6 +124,9 @@ func topsort (dep_list list.List) {
         lib := def[0]   // dependant (with an a) library
         list := dg[lib] // handle additional dependencies
 
+        
+
+    
     scan:
         for _, pr := range def[1:] { // (pr for prerequisite)
             if pr == lib {
@@ -176,10 +179,9 @@ func topsort (dep_list list.List) {
                     fmt.Println(lib, deps)
                 }
             }
-            return
+            return flist
         }
-        // output a set that can be processed concurrently
-        fmt.Println("set is ",zero)
+        
  
         // remove edges (dependencies) from dg
         for _, remove := range zero {
@@ -193,18 +195,12 @@ func topsort (dep_list list.List) {
                 }
             }
         }
+        // output a set that can be processed concurrently
+        fmt.Println("set is ",zero)
+        flist.PushBack(zero)
     }
+    return flist
 }
-
-
-/* This function is not required anymore
-
-Tokenizing the String of config file into Target/Dependencies/Command
-func cdelimit(r rune) bool {
-	return  r == ':'
-}
-*/
-
 
 //Function will read file and print lines for each dependency and return list of all
 // dependencies

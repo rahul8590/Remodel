@@ -45,169 +45,49 @@ func load(e interface{} , filename string) {
     if err != nil { panic(err) }
 }
 
-// Retrieves the hash_values stored as a gobject hash_store
-func hash_ret (gobject string ) map[string]string{
-  n,err := ioutil.ReadFile(gobject)
-        if err != nil {
-                fmt.Printf("cannot read file")
-                panic(err)
-        } 
-        //create a bytes.Buffer type with n, type []byte
-        p := bytes.NewBuffer(n) 
-        //bytes.Buffer satisfies the interface for io.Writer and can be used
-        //in gob.NewDecoder() 
-        dec := gob.NewDecoder(p)
-        //make a map reference type that we'll populate with the decoded gob 
-        //e := make(map[int]string)
-         e := make(map[string]string)
-        //we must decode into a pointer, so we'll take the address of e 
-        err = dec.Decode(&e)
-        if err != nil {
-                fmt.Printf("cannot decode")
-                panic(err)
-        }
+//Executing Command in Series First
+func exe_cmd(cmd string, wg *sync.WaitGroup) {
+  fmt.Println("command is ",cmd)
+  // splitting head => g++ parts => rest of the command
+  parts := strings.Fields(cmd)
+  head := parts[0]
+  parts = parts[1:len(parts)]
 
-        fmt.Println("after reading dep_data printing ",e)
-        return e
-
-}
-
-// The hash values of all the elements it gets is stored in the gob file
-func hash_store(data map[string]string) {
-  //initialize a *bytes.Buffer
-  m := new(bytes.Buffer) 
-  //the *bytes.Buffer satisfies the io.Writer interface and can
-  //be used in gob.NewEncoder() 
-  enc := gob.NewEncoder(m)
-  //gob.Encoder has method Encode that accepts data items as parameter
-  enc.Encode(data)
-  //the bytes.Buffer type has method Bytes() that returns type []byte, 
-  //and can be used as a parameter in ioutil.WriteFile() 
-  err := ioutil.WriteFile("dep_data", m.Bytes(), 0600) 
+  out, err := exec.Command(head,parts...).Output()
   if err != nil {
-          panic(err)
-
+    fmt.Printf("%s", err)
   }
-  fmt.Printf("just saved all depinfo with %v\n", data)
+  fmt.Printf("%s", out)
+  wg.Done() // Need to signal to waitgroup that this goroutine is done
 }
 
-//Function to check for changes 
-func check_file_change(){
-  // 1. Read dep_data gobject and iterate through all the md5 changes
-  // 2. Check the md5 hashes against input object
-  // 3. Return a array of files which have been changed
-}
+func getHash(filename string) (string) {
+    fmt.Println("filename to be read is ",filename)
+    filename = strings.TrimSpace(filename)
+    bs, err := ioutil.ReadFile(filename)
 
-
-/*Function takes a list of dependencies  and returns a topologically sorted list
-Input: [ [Default baz]
-         [baz foo.o file.o]
-      ]
-Each element of the list is of type []string
-
-Output: List which is topologically sorted and each of the element is of 
-type []string
-Note: Currently its only printing the output and not returning anything
-*/
-func topsort (dep_list list.List) list.List{
-    var flist list.List
-    dg := make(map[string][]string)
-    //for _, line := range lines {
-    for e := dep_list.Front(); e!= nil ; e = e.Next() {
-        fmt.Println("printing e.value in main",e.Value)
-        def := e.Value.([]string)    
-
-        //def := strings.Fields(line)
-        fmt.Printf("Def is %s \n",def)
-        if len(def) == 0 {
-            continue // handle blank lines
-        }
-        lib := def[0]   // dependant (with an a) library
-        list := dg[lib] // handle additional dependencies
-
-        
-
-    
-    scan:
-        for _, pr := range def[1:] { // (pr for prerequisite)
-            if pr == lib {
-                continue // ignore self dependencies
-            }
-            for _, known := range list {
-                if known == pr {
-                    continue scan // ignore duplicate dependencies
-                }
-            }
-            // build: this curious looking assignment establishess a node
-            // for the prerequisite library if it doesn't already exist.
-            dg[pr] = dg[pr]
-            // build: add edge (dependency)
-            list = append(list, pr)
-        }
-        // build: add or update node for dependant library
-        dg[lib] = list
+    if err != nil {
+        fmt.Println(filename,err)
+        return "-1"
     }
- 
-    fmt.Printf("Dg is %s \n",dg)
-    //fmt.Printf("list is %s \n",list)
-
-
-    // topological sort on dg
-    for len(dg) > 0 {
-        // collect libs with no dependencies
-        var zero []string
-        for lib, deps := range dg {
-            if len(deps) == 0 {
-                zero = append(zero, lib)
-                delete(dg, lib) // remove node (lib) from dg
-            }
-        }
-        // cycle detection
-        
-        if len(zero) == 0 {
-            fmt.Println("libraries with un-orderable dependencies:")
-            // collect un-orderable dependencies
-            cycle := make(map[string]bool)
-            for _, deps := range dg {
-                for _, dep := range deps {
-                    cycle[dep] = true
-                }
-            }
-            
-            // print libs with un-orderable dependencies
-            for lib, deps := range dg {
-                if cycle[lib] {
-                    fmt.Println(lib, deps)
-                }
-            }
-            return flist
-        }
-        
- 
-        // remove edges (dependencies) from dg
-        for _, remove := range zero {
-            for lib, deps := range dg {
-                for i, dep := range deps {
-                    if dep == remove {
-                        copy(deps[i:], deps[i+1:])
-                        dg[lib] = deps[:len(deps)-1]
-                        break
-                    }
-                }
-            }
-        }
-        // output a set that can be processed concurrently
-        fmt.Println("set is ",zero)
-        flist.PushBack(zero)
-    }
-    return flist
+    h := md5.New()
+    h.Write(bs)
+    //fmt.Println("file value is ",bs)
+    return hex.EncodeToString(h.Sum(nil))
 }
 
-//Function will read file and print lines for each dependency and return list of all
-// dependencies
-func config_parse(file_name string) (list.List,map[string]depinfo) {
+func check(path string) (bool) {
+    _, err := os.Stat(path)
+    if err == nil { return true }
+    if os.IsNotExist(err) { return false }
+    return false
+}
+
+
+func config_parse(file_name string) (list.List,map[string]depinfo,string,string) {
   var dep_list list.List
   var dep = make(map[string]depinfo)
+  var build,status string
   var hashinfo = make(map[string]string)
 
   file,err := os.Open(file_name)
@@ -233,7 +113,9 @@ func config_parse(file_name string) (list.List,map[string]depinfo) {
     
     s := strings.Split(sline,"<-")
     s[0] = strings.TrimSpace(s[0])
+    // Returning Default Build
     if (strings.ToLower(s[0]) == "default"){
+      build = s[1]
       continue
     }
 
@@ -275,51 +157,119 @@ func config_parse(file_name string) (list.List,map[string]depinfo) {
    }
    fmt.Println("Elements in the dictonary are",dep)
    fmt.Println(" Hash info values are ",hashinfo)
-   hash_store(hashinfo)
-   return dep_list , dep   
+   //hash_store(hashinfo)
+   
+   if (check(".remodel/hash_data") == false) {
+    store(hashinfo,".remodel/hash_data")
+    status = "1"
+   } else {
+    fmt.Println("hash_data already exist")
+    status = "0"
+   }
+   return dep_list, dep, build, status  
 }
 
 
-//Gethash Function returns hash of a string
-func getHash(filename string) (string) {
-    fmt.Println("filename to be read is ",filename)
-    filename = strings.TrimSpace(filename)
-    bs, err := ioutil.ReadFile(filename)
-    if err != nil {
-        fmt.Println(filename,err)
-        return "-1"
+/*Function takes a list of dependencies  and returns a topologically sorted list
+Input: [ [Default baz]
+         [baz foo.o file.o]
+      ]
+Each element of the list is of type []string
+
+Output: List which is topologically sorted and each of the element is of 
+type []string
+Note: Currently its only printing the output and not returning anything
+*/
+func topsort (dep_list list.List) list.List{
+    var flist list.List
+    dg := make(map[string][]string)
+    //for _, line := range lines {
+    for e := dep_list.Front(); e!= nil ; e = e.Next() {
+        fmt.Println("printing e.value in main",e.Value)
+        def := e.Value.([]string)    
+
+        //def := strings.Fields(line)
+        fmt.Printf("Def is %s \n",def)
+        if len(def) == 0 {
+            continue // handle blank lines
+        }
+        lib := def[0]   // dependant (with an a) library
+        list := dg[lib] // handle additional dependencies
+   
+    scan:
+        for _, pr := range def[1:] { // (pr for prerequisite)
+            if pr == lib {
+                continue // ignore self dependencies
+            }
+            for _, known := range list {
+                if known == pr {
+                    continue scan // ignore duplicate dependencies
+                }
+            }
+            // build: this curious looking assignment establishess a node
+            // for the prerequisite library if it doesn't already exist.
+            dg[pr] = dg[pr]
+            // build: add edge (dependency)
+            list = append(list, pr)
+        }
+        // build: add or update node for dependant library
+        dg[lib] = list
     }
-    h := md5.New()
-    h.Write(bs)
-    fmt.Println("file value is ",bs)
-    return hex.EncodeToString(h.Sum(nil))
+ 
+    fmt.Printf("Dg is %s \n",dg)
+
+    // topological sort on dg
+    for len(dg) > 0 {
+        // collect libs with no dependencies
+        var zero []string
+        for lib, deps := range dg {
+            if len(deps) == 0 {
+                zero = append(zero, lib)
+                delete(dg, lib) // remove node (lib) from dg
+            }
+        }
+        // cycle detection
+        
+        if len(zero) == 0 {
+            fmt.Println("The are cyclic dependencies:")
+            // collect un-orderable dependencies
+            cycle := make(map[string]bool)
+            for _, deps := range dg {
+                for _, dep := range deps {
+                    cycle[dep] = true
+                }
+            }
+            
+            // print libs with un-orderable dependencies
+            for lib, deps := range dg {
+                if cycle[lib] {
+                    fmt.Println(lib, deps)
+                }
+            }
+            fmt.Println("Cannot Proceed :(")
+            os.Exit(0)
+            return flist
+        }
+        // remove edges (dependencies) from dg
+        for _, remove := range zero {
+            for lib, deps := range dg {
+                for i, dep := range deps {
+                    if dep == remove {
+                        copy(deps[i:], deps[i+1:])
+                        dg[lib] = deps[:len(deps)-1]
+                        break
+                    }
+                }
+            }
+        }
+        // output a set that can be processed concurrently
+        fmt.Println("set is ",zero)
+        flist.PushBack(zero)
+    }
+    return flist
 }
 
 
-//Executing Command in Series First
-func exe_cmd(cmd string, wg *sync.WaitGroup) {
-  fmt.Println("command is ",cmd)
-  // splitting head => g++ parts => rest of the command
-  parts := strings.Fields(cmd)
-  head := parts[0]
-  parts = parts[1:len(parts)]
-
-  out, err := exec.Command(head,parts...).Output()
-  if err != nil {
-    fmt.Printf("%s", err)
-  }
-  fmt.Printf("%s", out)
-  wg.Done() // Need to signal to waitgroup that this goroutine is done
-}
-
-
-
-func check(path string) (bool) {
-    _, err := os.Stat(path)
-    if err == nil { return true }
-    if os.IsNotExist(err) { return false }
-    return false
-}
 
 
 

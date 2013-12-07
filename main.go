@@ -280,10 +280,16 @@ func main() {
   var build, status string
   wg := new(sync.WaitGroup)
   
+  if (check(".remodel") == false) {
+    a := os.Mkdir(".remodel",0755)
+    fmt.Println("making .remodel" ,a) 
+  } 
+  
   /*
   dep1_list  => topsorted list of the objects need to be built 
   dep1  => dependency list based on depinfo structure
   build => default build (if argument not supplied)
+  status => 0 hash_data exist ; 1 does not and config_parse dumped it
   */
   dep1_list, dep1, build, status = config_parse("config")
   fmt.Println(dep1_list,dep1)

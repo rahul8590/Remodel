@@ -1,7 +1,7 @@
-#include "bar.h"
-
-#include <cstdio>
-
-void bar() {
-    printf("bar.cpp was here.\n");
+#include<iostream>
+using namespace std;
+int main() {
+  cout <<"this is bar.cpp";
+  cout<<"adding new line";
+  return 0;
 }

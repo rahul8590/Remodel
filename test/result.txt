@@ -1,0 +1,19 @@
+Elements in the dictonary are map[baz:{[bar.o] g++ bar.o -o baz} bar.o:{[bar.cpp]  g++ -c bar.cpp -o bar.o}]
+ Hash info values are  map[bar.cpp:4debe1aaf99101530082e39ad7e11856 baz:4904c77b7d3d33033d6eb7fffcbdd0ab bar.o:ddd65bba936815443450a43d132806ff]
+{0x1864d260 0x1864d3e0 2} map[baz:{[bar.o] g++ bar.o -o baz} bar.o:{[bar.cpp]  g++ -c bar.cpp -o bar.o}]
+The previous hash data is  map[baz:4904c77b7d3d33033d6eb7fffcbdd0ab bar.cpp:94a5bb808a91fa0db49ae15b03a5f70f bar.o:ddd65bba936815443450a43d132806ff]
+==========Executing Topsort ==============
+printing e.value in main [baz bar.o]
+Def is [baz bar.o] 
+printing e.value in main [bar.o bar.cpp]
+Def is [bar.o bar.cpp] 
+Dg is map[bar.cpp:[] baz:[bar.o] bar.o:[bar.cpp]] 
+set is  [bar.cpp]
+set is  [bar.o]
+set is  [baz]
+=========End of Execution ================
+prev_hash =>[ 94a5bb808a91fa0db49ae15b03a5f70f ]Current Hash =>[ 4debe1aaf99101530082e39ad7e11856 ]dep_v => bar.cpp
+ g++ -c bar.cpp -o bar.o
+prev_hash =>[ ddd65bba936815443450a43d132806ff ]Current Hash =>[ ffef7cc899110f2175a8532fb8422a51 ]dep_v => bar.o
+g++ bar.o -o baz
+

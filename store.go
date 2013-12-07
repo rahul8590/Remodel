@@ -33,9 +33,9 @@ func load(e interface{} , filename string) {
 
 
 func main() {
-	org := map[string]string{"foo": "bar"}
-	store(org , "store_data")
+	//org := map[string]string{"foo": "bar"}
+	//store(org , ".remodel/store_data")
 	var loadedMap map[string]string
-	load(&loadedMap, "store_data")
-	fmt.Println(loadedMap["foo"]) 
+	load(&loadedMap, "hash_data")
+	fmt.Println(loadedMap) 
 }

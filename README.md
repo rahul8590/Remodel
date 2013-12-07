@@ -21,3 +21,10 @@ Here's an example that builds the program baz from two source files, foo.cpp and
 
 The dependencies are stored on disk in a special directory called .remodel/, so that remodel will not re-execute any commands unless a dependency has been violated.
 
+Test Cases
+-----------
+
+1. Check for 1st time Scan 
+2. Check Intermediate Builds 
+3. Builds based on Checkpoints 
+4. Check For Cyclic Dependencies

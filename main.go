@@ -271,9 +271,82 @@ func topsort (dep_list list.List) list.List{
 
 
 
+func main() {
+  
+  //Declarations
+  var dep1_list list.List
+  var exe_list list.List
+  var dep1 = make(map[string]depinfo)
+  var build, status string
+  wg := new(sync.WaitGroup)
+  
+  /*
+  dep1_list  => topsorted list of the objects need to be built 
+  dep1  => dependency list based on depinfo structure
+  build => default build (if argument not supplied)
+  */
+  dep1_list, dep1, build, status = config_parse("config")
+  fmt.Println(dep1_list,dep1)
+  
 
+  // Loading Previous hash_values
+  var prev_hash  map[string]string
+  load(&prev_hash, ".remodel/hash_data")
+  fmt.Println("The previous hash data is ",prev_hash)
 
-func main(){
+  fmt.Println("==========Executing Topsort ==============")
+  flist := topsort(dep1_list)
+  fmt.Println("=========End of Execution ================")
+  
+  if (len(os.Args) > 1) {
+    build = os.Args[1]
+  }
 
-
+  for e := flist.Front(); e!= nil ; e = e.Next() {
+    fmt.Println("printing e.value in main",e.Value)
+    fmt.Println(reflect.TypeOf(e.Value))
+    
+    name := e.Value.([]string) //Go needs freking type assertions damn
+    for i,v := range name {
+      fmt.Println(i," ",v)
+      name_info := dep1[v]
+      if (name_info.Dep == nil){
+        fmt.Println("name_info is empty for",v)
+      } else {
+        fmt.Println("the dependency for the", v ,"is:",name_info.Dep)
+        for _,dep_v := range name_info.Dep{
+          fmt.Println("chumma printing dep_v",dep_v , "Cmd =>" , name_info.Cmd)
+          //check_file_change() == true
+          phash := strings.TrimSpace(prev_hash[dep_v])
+          chash := strings.TrimSpace(getHash(dep_v))
+          if ( phash != chash || status == "1") {
+            fmt.Println("prev_hash =>[",phash,"]Current Hash =>[",chash,"]dep_v =>", dep_v)
+            fmt.Println(name_info.Cmd)
+            prev_hash[dep_v] = chash  // Resetting the hash_value to current value
+            
+            wg.Add(1)
+            go exe_cmd(name_info.Cmd,wg)
+                
+            exe_list.PushBack(name_info.Cmd)  
+            break
+          } else {
+            fmt.Println("hash values are same for", dep_v)
+          }
+        
+        }
+        wg.Wait()
+      // Added for Custom Builds as soon as it matches, it will exit
+      if (build == v) {
+        fmt.Println("build criteria is met build =>",build)
+        goto last_step
+        }
+      }
+    }    
+  }
+  last_step:
+    
+    //Checkign for Root argument. If root argument is given by user, it needs to be built
+    fmt.Println("flagvar has type ", reflect.TypeOf(build) ,"Build => ", build)
+    store(prev_hash,".remodel/hash_data")
+    fmt.Println("re-storing the latest hash_object in hash_data")
 }

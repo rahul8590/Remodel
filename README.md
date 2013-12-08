@@ -27,8 +27,9 @@ Usage
 
 Remodel is pretty simple to use. Have all the build dependencies writted to config file
 named "config" (without the quotes ofcourse :) . 
-``` $ go build main.go
-    $ ./main.go <optional_root_name>
+```bash
+ $ go build main.go
+ $ ./main.go <optional_root_name>
 ```
 
 > Note: The program assumes all the files are present in the same directory as main.go
@@ -36,7 +37,7 @@ named "config" (without the quotes ofcourse :) .
 
 
 Test Cases
------------
+----------
 
 1. Check for 1st time Scan 
 2. Check Intermediate Builds 

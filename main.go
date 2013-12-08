@@ -189,7 +189,7 @@ func topsort (dep_list list.List) list.List{
         def := e.Value.([]string)    
 
         //def := strings.Fields(line)
-        fmt.Printf("Def is %s \n",def)
+        //fmt.Printf("Def is %s \n",def)
         if len(def) == 0 {
             continue // handle blank lines
         }

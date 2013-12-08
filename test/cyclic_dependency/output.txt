@@ -1,7 +1,9 @@
-set is  [foo.cpp bar.cpp]
+making .remodel <nil>
+==========Executing Topsort ==============
+set is  [bar.cpp foo.cpp]
 set is  [foo.o]
 The are cyclic dependencies:
-baz [bar.o]
 bar.o [baz]
+baz [bar.o]
 Cannot Proceed :(
 

@@ -26,14 +26,16 @@ Usage
 ------
 
 Remodel is pretty simple to use. Have all the build dependencies writted to config file
-named "config" (without the quotes ofcourse :) . 
+named "config" (without the quotes ofcourse :) . If no parameters are passed to it, default will be
+choosen as root.
+
 ```bash
  $ go build main.go
- $ ./main.go <optional_root_name>
+ $ ./main <optional_root_name>
 ```
 
 > Note: The program assumes all the files are present in the same directory as main.go
-> Currently, it does not support if there are file present in sub-directories :(
+> Currently, it does not support files present in sub-directories :(
 
 
 Test Cases

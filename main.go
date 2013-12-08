@@ -47,17 +47,17 @@ func load(e interface{} , filename string) {
 
 //Executing Command in Series First
 func exe_cmd(cmd string, wg *sync.WaitGroup) {
-  fmt.Println("command is ",cmd)
+  //fmt.Println("command is ",cmd)
   // splitting head => g++ parts => rest of the command
   parts := strings.Fields(cmd)
   head := parts[0]
   parts = parts[1:len(parts)]
 
-  out, err := exec.Command(head,parts...).Output()
+  _, err := exec.Command(head,parts...).Output()
   if err != nil {
     fmt.Printf("%s", err)
   }
-  fmt.Printf("%s", out)
+  //fmt.Printf("%s", out)
   wg.Done() // Need to signal to waitgroup that this goroutine is done
 }
 
@@ -67,7 +67,7 @@ func getHash(filename string) (string) {
     bs, err := ioutil.ReadFile(filename)
 
     if err != nil {
-        fmt.Println(filename,err)
+        //fmt.Println("gethash",filename,err)
         return "-1"
     }
     h := md5.New()
@@ -92,7 +92,8 @@ func config_parse(file_name string) (list.List,map[string]depinfo,string,string)
 
   file,err := os.Open(file_name)
   if err != nil {
-      fmt.Println("error")
+      fmt.Println("config file does not exist")
+      os.Exit(-1)
     }
   bf := bufio.NewReader(file)
 
@@ -163,7 +164,7 @@ func config_parse(file_name string) (list.List,map[string]depinfo,string,string)
     store(hashinfo,".remodel/hash_data")
     status = "1"
    } else {
-    fmt.Println("hash_data already exist")
+    //fmt.Println("hash_data already exist")
     status = "0"
    }
    return dep_list, dep, build, status  
@@ -263,7 +264,7 @@ func topsort (dep_list list.List) list.List{
             }
         }
         // output a set that can be processed concurrently
-        fmt.Println("set is ",zero)
+        fmt.Println("Order List: ",zero)
         flist.PushBack(zero)
     }
     return flist
@@ -298,7 +299,7 @@ func main() {
   // Loading Previous hash_values
   var prev_hash  map[string]string
   load(&prev_hash, ".remodel/hash_data")
-  fmt.Println("The previous hash data is ",prev_hash)
+  //fmt.Println("The previous hash data is ",prev_hash)
 
   //If custom root file is given
   if (len(os.Args) > 1) {
@@ -311,9 +312,9 @@ func main() {
   }
 
 
-  fmt.Println("==========Executing Topsort ==============")
+  fmt.Println("==========Parallel Build Order==============")
   flist := topsort(dep1_list)
-  fmt.Println("=========End of Execution ================")
+  fmt.Println("=========End List================")
   
 
   for e := flist.Front(); e!= nil ; e = e.Next() {
@@ -321,8 +322,8 @@ func main() {
     //fmt.Println(reflect.TypeOf(e.Value))
     
     name := e.Value.([]string) //Go needs freking type assertions damn
-    for i,v := range name {
-      fmt.Println(i," ",v)
+    for _,v := range name {
+      //fmt.Println(i," ",v)
       name_info := dep1[v]
 
       
@@ -362,14 +363,14 @@ func main() {
             exe_list.PushBack(name_info.Cmd)  
             break
           } else {
-            fmt.Println("hash values are same for", dep_v)
+            //fmt.Println("hash values are same for", dep_v)
           }
         
         }
         wg.Wait()
       // Added for Custom Builds as soon as it matches, it will exit
       if (build == v) {
-        fmt.Println("build criteria is met build =>",build)
+        fmt.Println("Custom build criteria is met build =>",build)
         goto last_step
         }
       }

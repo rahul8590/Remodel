@@ -321,17 +321,36 @@ func main() {
     //fmt.Println(reflect.TypeOf(e.Value))
     
     name := e.Value.([]string) //Go needs freking type assertions damn
-    for _,v := range name {
-      //fmt.Println(i," ",v)
+    for i,v := range name {
+      fmt.Println(i," ",v)
       name_info := dep1[v]
+
+      
+
+
       if (name_info.Dep == nil){
         //fmt.Println("name_info is empty for",v)
+        if (check(v) == false)  {
+          fmt.Println("Source file ", v ," does not exist, Cannot Proceed :( ")
+          os.Exit(-1)
+        }
       } else {
         //fmt.Println("the dependency for the", v ,"is:",name_info.Dep)
-        for _,dep_v := range name_info.Dep{
+        //Checking for a file which has a dependency but does no exist (deleted object files)
+        if (check(v) == false){
+            wg.Add(1)
+            go exe_cmd(name_info.Cmd,wg)
+            wg.Wait()
+        }
+
+      for _,dep_v := range name_info.Dep{
           //fmt.Println("chumma printing dep_v",dep_v , "Cmd =>" , name_info.Cmd)
           phash := strings.TrimSpace(prev_hash[dep_v])
           chash := strings.TrimSpace(getHash(dep_v))
+
+          
+
+
           if ( phash != chash || status == "1") {
             //fmt.Println("prev_hash =>[",phash,"]Current Hash =>[",chash,"]dep_v =>", dep_v)
             fmt.Println(name_info.Cmd)

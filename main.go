@@ -298,15 +298,23 @@ func main() {
   // Loading Previous hash_values
   var prev_hash  map[string]string
   load(&prev_hash, ".remodel/hash_data")
-  //fmt.Println("The previous hash data is ",prev_hash)
+  fmt.Println("The previous hash data is ",prev_hash)
+
+  //If custom root file is given
+  if (len(os.Args) > 1) {
+    build = os.Args[1]
+    val,ok := prev_hash[build]
+    if !ok {
+     fmt.Println("File to be Built is not in config",val)
+     os.Exit(1)
+    }
+  }
+
 
   fmt.Println("==========Executing Topsort ==============")
   flist := topsort(dep1_list)
   fmt.Println("=========End of Execution ================")
   
-  if (len(os.Args) > 1) {
-    build = os.Args[1]
-  }
 
   for e := flist.Front(); e!= nil ; e = e.Next() {
     //fmt.Println("printing e.value in main",e.Value)

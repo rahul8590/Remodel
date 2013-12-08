@@ -34,6 +34,14 @@ choosen as root.
  $ ./main <optional_root_name>
 ```
 
+The following the go version
+
+```bash
+  $ go version
+  go version go1
+```
+
+
 > Note: The program assumes all the files are present in the same directory as main.go
 > Currently, it does not support files present in sub-directories :(
 
@@ -45,3 +53,4 @@ Test Cases
 2. Check Intermediate Builds 
 3. Builds based on Checkpoints 
 4. Check For Cyclic Dependencies
+5. Handling of Missing source files / Intermediate object files

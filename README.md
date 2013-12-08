@@ -21,6 +21,20 @@ Here's an example that builds the program baz from two source files, foo.cpp and
 
 The dependencies are stored on disk in a special directory called .remodel/, so that remodel will not re-execute any commands unless a dependency has been violated.
 
+
+Usage
+------
+
+Remodel is pretty simple to use. Have all the build dependencies writted to config file
+named "config" (without the quotes ofcourse :) . 
+``` $ go build main.go
+    $ ./main.go <optional_root_name>
+```
+
+> Note: The program assumes all the files are present in the same directory as main.go
+> Currently, it does not support if there are file present in sub-directories :(
+
+
 Test Cases
 -----------
 

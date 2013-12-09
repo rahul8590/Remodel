@@ -58,4 +58,4 @@ Test Cases
 
 More Page Links
 ---------------
-[Code Walkthrough](Remodel/wiki/Code-Walkthrough)
+[Code Walkthrough](../../wiki/Code-Walkthrough)

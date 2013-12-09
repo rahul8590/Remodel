@@ -43,7 +43,7 @@ The following the go version
 
 
 > Note: The program assumes all the files are present in the same directory as main.go
-> Currently, it does not support files present in sub-directories :(
+> Currently, it does not support files present in sub-directories :( . 
 
 
 Test Cases

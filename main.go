@@ -282,8 +282,8 @@ func main() {
   wg := new(sync.WaitGroup)
   
   if (check(".remodel") == false) {
-    a := os.Mkdir(".remodel",0755)
-    fmt.Println("making .remodel",a) 
+    os.Mkdir(".remodel",0755)
+    fmt.Println("making .remodel") 
   } 
   
   /*
@@ -354,7 +354,7 @@ func main() {
 
           if ( phash != chash || status == "1") {
             //fmt.Println("prev_hash =>[",phash,"]Current Hash =>[",chash,"]dep_v =>", dep_v)
-            fmt.Println(name_info.Cmd)
+            //fmt.Println(name_info.Cmd)
             prev_hash[dep_v] = chash  // Resetting the hash_value to current value
             
             wg.Add(1)
@@ -381,5 +381,6 @@ func main() {
     //Checkign for Root argument. If root argument is given by user, it needs to be built
     //fmt.Println("flagvar has type ", reflect.TypeOf(build) ,"Build => ", build)
     store(prev_hash,".remodel/hash_data")
-    fmt.Println("re-storing the latest hash_object in hash_data")
+    fmt.Println("Updating the Hash Object")
+    fmt.Println("Exiting Successfully")
 }
